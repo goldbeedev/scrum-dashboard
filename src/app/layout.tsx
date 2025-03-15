@@ -1,19 +1,20 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, Plus_Jakarta_Sans } from 'next/font/google';
 import "./globals.css";
 import { UserProvider } from "@auth0/nextjs-auth0/client";
-
 import { JSX } from "react";
-import { Navbar } from "./components/Navbar";
+import { ConditionalNavbar } from "./components/ConditionalNavbar";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const inter = Inter({ 
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  variable: '--font-jakarta',
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -28,12 +29,10 @@ export default function RootLayout({
 }>): JSX.Element {
   return (
     // can use "data-theme" tag for themeing.
-    <html lang="en">
+    <html lang="en" className={`${inter.variable} ${jakarta.variable}`}>
       <UserProvider>
-        <body
-          className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        >
-          <Navbar />
+        <body>
+          <ConditionalNavbar />
           {children}
         </body>
       </UserProvider>
