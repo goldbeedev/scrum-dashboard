@@ -22,23 +22,23 @@ export default function EmailCaptureForm() {
 
       if (response.ok) {
         setStatus('success');
-        setMessage('Thanks for subscribing! Check your email to confirm.');
+        setMessage('Thanks! You\'re on the beta waitlist. We\'ll notify you when we launch.');
         setEmail('');
       } else {
         throw new Error(data.error || 'Something went wrong');
       }
     } catch (error) {
       setStatus('error');
-      setMessage(error instanceof Error ? error.message : 'Failed to subscribe');
+      setMessage(error instanceof Error ? error.message : 'Failed to join waitlist');
     }
   };
 
   return (
     <div className="form-control w-full max-w-md mx-auto">
-      <form onSubmit={handleSubmit} className="input-group">
+      <form onSubmit={handleSubmit} className="flex gap-2">
         <input 
           type="email" 
-          placeholder="Enter your email" 
+          placeholder="Your email address" 
           className="input input-bordered flex-1 bg-gray-800 text-white border-gray-700 placeholder-gray-400" 
           aria-label="Email address"
           value={email}
@@ -50,7 +50,7 @@ export default function EmailCaptureForm() {
           className="btn bg-blue-600 hover:bg-blue-700 text-white border-none"
           disabled={status === 'loading'}
         >
-          {status === 'loading' ? 'Subscribing...' : 'Get Started'}
+          {status === 'loading' ? 'Joining...' : 'Join Waitlist'}
         </button>
       </form>
       {message && (
@@ -62,7 +62,7 @@ export default function EmailCaptureForm() {
       )}
       {status !== 'success' && (
         <label className="label">
-          <span className="label-text-alt text-gray-400">Free 14-day trial, no credit card required</span>
+          <span className="label-text-alt text-gray-400">Limited spots available - Join the waitlist today</span>
         </label>
       )}
     </div>

@@ -4,7 +4,7 @@ import PricingCards from './components/PricingCards';
 
 export const metadata: Metadata = {
   title: 'Scrum Dashboard - Your All-in-One Agile Ceremony Platform',
-  description: 'Streamline Planning Poker, Retros, and Refinements with Jira and Slack integration. The complete platform for managing your Scrum ceremonies and team collaboration.',
+  description: 'Transform your agile ceremonies with Scrum Dashboard. Streamline Planning Poker, Retros, and Refinements with Jira and Slack integration. The complete platform for managing your Scrum ceremonies and team collaboration.',
   keywords: ['Scrum Dashboard', 'Planning Poker', 'Agile Retros', 'Jira Integration', 'Scrum Ceremonies', 'Team Collaboration'],
 };
 
@@ -19,7 +19,7 @@ export default function Home() {
             <p className="py-6 text-xl text-gray-300 leading-relaxed">
               Your complete platform for Scrum ceremonies. Run engaging Planning Poker sessions,
               track sprint improvements, and manage refinements - all integrated with Jira and Slack.
-              Make data-driven decisions with ceremony analytics and team insights.
+              The Scrum Dashboard that helps you make data-driven decisions with ceremony analytics and team insights.
             </p>
             
             {/* Email CTA Form */}
@@ -51,7 +51,7 @@ export default function Home() {
             <div className="card bg-black shadow-xl border border-gray-800">
               <div className="card-body items-center text-center">
                 <h3 className="card-title text-2xl text-purple-400 font-display">Seamless Integration</h3>
-                <p className="text-gray-300">Connect with Jira for issue tracking and Slack for notifications. Assign tasks and track progress across all ceremonies</p>
+                <p className="text-gray-300">Your Scrum Dashboard connects seamlessly with Jira for issue tracking and Slack for notifications. Assign tasks and track progress across all ceremonies</p>
               </div>
             </div>
           </div>
@@ -89,7 +89,7 @@ export default function Home() {
       <section className="py-20 bg-black">
         <div className="container mx-auto px-4">
           <h2 className="text-3xl font-bold text-center mb-4 text-blue-400 font-display tracking-tight">Early Access Pricing</h2>
-          <p className="text-center mb-12 text-lg text-gray-300">Be among the first to transform your Scrum ceremonies</p>
+          <p className="text-center mb-12 text-lg text-gray-300">Be among the first to experience the most intuitive Scrum Dashboard for your team</p>
           <PricingCards />
         </div>
       </section>
@@ -98,7 +98,7 @@ export default function Home() {
       <section id="signup" className="py-20 bg-gradient-to-r from-blue-900 to-purple-900">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-3xl font-bold mb-6 text-white font-display tracking-tight">Level Up Your Scrum Ceremonies</h2>
-          <p className="mb-8 text-xl text-gray-200">Join our early access program and help shape the future of agile team collaboration. Integrate with your existing tools and start making data-driven decisions.</p>
+          <p className="mb-8 text-xl text-gray-200">Join the Scrum Dashboard beta and help shape the future of agile team collaboration. Integrate with your existing tools and start making data-driven decisions.</p>
           <EmailCaptureForm />
         </div>
       </section>
