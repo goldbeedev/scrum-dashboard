@@ -10,11 +10,11 @@ export default function PricingCards() {
           <h3 className="card-title text-2xl text-white font-display">Basic Plan</h3>
           <div className="my-4">
             <div className="mb-1">
-              <span className="text-xl line-through text-gray-400 font-display">$9</span>
+              <span className="text-xl line-through text-gray-400 font-display">$25</span>
               <span className="text-xl text-gray-400">/user/month</span>
             </div>
             <div className="flex items-center justify-center gap-2">
-              <span className="text-4xl font-bold text-white font-display">$7</span>
+              <span className="text-4xl font-bold text-white font-display">$19</span>
               <span className="text-xl text-gray-200">/user/month</span>
               <span className="px-2 py-1 bg-opacity-20 bg-blue-500 border border-blue-400 rounded-md text-blue-400 text-xs font-medium">BETA PRICE</span>
             </div>
@@ -29,7 +29,7 @@ export default function PricingCards() {
             <li className="font-semibold text-blue-400 mt-4">Beta Benefits:</li>
             <li>✓ Early Access to Core Features</li>
             <li>✓ Shape Product Development</li>
-            <li>✓ Lock in $7/user Price Forever*</li>
+            <li>✓ Lock in $19/user Price Forever*</li>
           </ul>
           <div className="card-actions flex-col gap-2">
             <button 
@@ -54,11 +54,11 @@ export default function PricingCards() {
           <h3 className="card-title text-2xl text-purple-400 font-display">Team</h3>
           <div className="my-4">
             <div className="mb-1">
-              <span className="text-xl line-through text-gray-400 font-display">$15</span>
+              <span className="text-xl line-through text-gray-400 font-display">$29</span>
               <span className="text-xl text-gray-400">/user/month</span>
             </div>
             <div className="flex items-center justify-center gap-2">
-              <span className="text-4xl font-bold text-white font-display">$12</span>
+              <span className="text-4xl font-bold text-white font-display">$25</span>
               <span className="text-xl text-gray-400">/user/month</span>
             </div>
           </div>
@@ -66,9 +66,10 @@ export default function PricingCards() {
             <li>✓ Everything in Basic, plus:</li>
             <li>✓ Advanced Analytics</li>
             <li>✓ Slack Integration</li>
-            <li>✓ Custom Templates</li>
+            <li>✓ Custom Workflows</li>
+            <li>✓ Team Templates</li>
             <li>✓ API Access</li>
-            <li>✓ Priority Support</li>
+            <li>✓ Community Support</li>
           </ul>
           <div className="card-actions flex-col gap-2">
             <button 
@@ -97,7 +98,8 @@ export default function PricingCards() {
             <li>✓ Everything in Team, plus:</li>
             <li>✓ SSO & Advanced Security</li>
             <li>✓ Custom Integrations</li>
-            <li>✓ Dedicated Support</li>
+            <li>✓ Custom Feature Requests</li>
+            <li>✓ Direct Support</li>
             <li>✓ Custom API Access</li>
             <li>✓ SLA Guarantee</li>
           </ul>
