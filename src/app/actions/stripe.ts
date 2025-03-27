@@ -18,11 +18,10 @@ export async function createCheckoutSession(
   const headersList = await headers()
 
   const origin: string = headersList.get("origin") as string;
-
   const checkoutSession: Stripe.Checkout.Session =
     await stripe.checkout.sessions.create({
       mode: "payment",
-      submit_type: "subscribe", // or "pay" ?
+      submit_type: "pay",
       line_items: [
         {
           quantity: 1,
