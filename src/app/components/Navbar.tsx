@@ -1,3 +1,4 @@
+import Link from "next/link"
 import ThemeToggle from "./ThemeToggle"
 
 // Can use '/hosted-checkout' for stripe checkout
@@ -7,7 +8,7 @@ export const Navbar = () => {
     return (
     <div className="navbar bg-base-100 text-base-content">
         <div className="flex-1">
-            <a href="/" className="btn btn-ghost text-base-content text-xl">WEBSITE TITLE - MAKE ME ENV</a>
+            <Link href="/" className="btn btn-ghost text-base-content text-xl">WEBSITE TITLE - MAKE ME ENV</Link>
         </div>
         <div className="flex-none gap-2">
             <div className="form-control">
@@ -25,13 +26,13 @@ export const Navbar = () => {
                 tabIndex={0}
                 className="menu menu-sm dropdown-content bg-base-100 text-base-content rounded-box z-[1] mt-3 w-52 p-2 shadow">
                 <li>
-                <a href='/profile' className="justify-between">
+                <Link href='/profile' className="justify-between">
                     Profile
                     <span className="badge">New</span>
-                </a>
+                </Link>
                 </li>
                 <li><ThemeToggle /></li>
-                <li><a href='/api/auth/logout'>Logout</a></li>
+                <li><Link href='/api/auth/logout'>Logout</Link></li>
             </ul>
             </div>
         </div>

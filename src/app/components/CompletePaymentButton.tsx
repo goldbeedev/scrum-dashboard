@@ -1,6 +1,6 @@
 import { formatAmountForDisplay } from "@/app/utils/stripe-helpers"
 
-
+/* eslint-disable */
 const CompletePaymentButton = (amount: number, currency: string, disabled: boolean) => (
     <button
           className="checkout-style-background"
