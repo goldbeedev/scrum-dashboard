@@ -29,9 +29,9 @@ export default function RootLayout({
 }>): JSX.Element {
   return (
     // can use "data-theme" tag for themeing.
-    <html lang="en" className={`${inter.variable} ${jakarta.variable}`}>
+    <html lang="en" className={`${inter.variable} ${jakarta.variable}`} data-theme="light">
       <UserProvider>
-        <body>
+        <body className="min-h-screen bg-base-100">
           <ConditionalNavbar />
           {children}
         </body>
