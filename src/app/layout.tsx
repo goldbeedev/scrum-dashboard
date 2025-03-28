@@ -4,6 +4,7 @@ import "./globals.css";
 import { UserProvider } from "@auth0/nextjs-auth0/client";
 import { JSX } from "react";
 import { ConditionalNavbar } from "./components/ConditionalNavbar";
+import { Analytics } from "@vercel/analytics/react";
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -34,6 +35,7 @@ export default function RootLayout({
         <body className="min-h-screen bg-base-100">
           <ConditionalNavbar />
           {children}
+          <Analytics />
         </body>
       </UserProvider>
     </html>
