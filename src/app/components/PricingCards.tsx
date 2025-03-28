@@ -41,7 +41,6 @@ export default function PricingCards() {
             >
               Join Beta Waitlist
             </button>
-            <span className="text-sm text-gray-200">Launching Q2 2024 - Limited Spots</span>
             <span className="text-xs text-gray-400 mt-2">*Price locked as long as you stay on Basic Plan</span>
           </div>
         </div>
