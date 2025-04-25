@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { validateApiKey } from '@/app/lib/api-auth';
 
+// Configuration for Next.js API Routes
+export const runtime = 'nodejs';
+
 // GET - List all records
 export async function GET(request: Request) {
   // Check API key

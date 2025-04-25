@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { validateApiKey } from '@/app/lib/api-auth';
 
+// Configuration for Next.js Edge API Routes
+export const runtime = 'nodejs';
+
 // GET - Retrieve a specific record
 export async function GET(
   request: Request,
