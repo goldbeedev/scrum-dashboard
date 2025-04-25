@@ -8,7 +8,7 @@ export const Navbar = () => {
     return (
     <div className="navbar bg-base-100 text-base-content">
         <div className="flex-1">
-            <Link href="/" className="btn btn-ghost text-base-content text-xl">WEBSITE TITLE - MAKE ME ENV</Link>
+            <Link href="/" className="btn btn-ghost text-base-content text-xl">Scrum Dashboard</Link>
         </div>
         <div className="flex-none gap-2">
             <div className="form-control">
