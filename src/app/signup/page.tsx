@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import SignupFlow from './components/SignupFlow';
 
 export const metadata: Metadata = {
@@ -20,7 +21,17 @@ export default function SignupPage() {
             </p>
             
             {/* Signup Flow Component */}
-            <SignupFlow />
+            <Suspense fallback={
+              <div className="mt-8">
+                <div className="animate-pulse">
+                  <div className="h-8 bg-gray-700 rounded w-1/4 mx-auto mb-4"></div>
+                  <div className="h-4 bg-gray-700 rounded w-1/2 mx-auto mb-2"></div>
+                  <div className="h-4 bg-gray-700 rounded w-1/3 mx-auto"></div>
+                </div>
+              </div>
+            }>
+              <SignupFlow />
+            </Suspense>
           </div>
         </div>
       </section>
