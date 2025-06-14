@@ -4,7 +4,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 export const GET = handleAuth({
     async login(req: NextApiRequest, res: NextApiResponse) {
         return await handleLogin(req, res, {
-          returnTo: "/signup",
+          returnTo: "/profile",
         });
       },
 

@@ -31,6 +31,24 @@ export default function SignupFlow() {
     }
   }, [user, currentStep, searchParams]);
 
+  useEffect(() => {
+    const initializeUser = async () => {
+      if (user && !isLoading) {
+        try {
+          // Ensure user exists in database
+          const response = await fetch('/api/user');
+          if (!response.ok) {
+            throw new Error('Failed to initialize user');
+          }
+        } catch (error) {
+          console.error('Error initializing user:', error);
+        }
+      }
+    };
+
+    initializeUser();
+  }, [user, isLoading]);
+
   const calculatePrice = (seats: number) => {
     const baseTotal = seats * BASE_PRICE;
     if (seats >= BULK_DISCOUNT_THRESHOLD) {
