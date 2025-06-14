@@ -18,4 +18,55 @@ model Record {
   data        Json?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-} 
+}
+
+model Tenant {
+  id              Int      @id @default(autoincrement())
+  uuid            String   @unique @default(uuid())
+  name            String
+  isActive        Boolean  @default(true)
+  maxUsers        Int?     // Optional field to limit number of users per tenant
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  license         License? @relation(fields: [licenseId], references: [id])
+  licenseId       Int?     @unique
+  users           User[]   // Relation to users
+  invitations     Invitation[]
+}
+
+model License {
+  id              Int      @id @default(autoincrement())
+  key             String   @unique
+  expiresAt       DateTime?
+  type            String   @default("standard") // Can be used to differentiate license types
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  tenant          Tenant?
+}
+
+model Invitation {
+  id          Int      @id @default(autoincrement())
+  email       String
+  token       String   @unique
+  status      String   @default("pending") // pending, accepted, expired
+  expiresAt   DateTime
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  tenantId    Int
+  invitedBy   User     @relation("InvitedBy", fields: [invitedById], references: [id])
+  invitedById Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model User {
+  id              Int      @id @default(autoincrement())
+  auth0Id         String   @unique  // Auth0's sub (user ID)
+  email           String   @unique
+  name            String?
+  role            String   @default("user") // e.g., "admin", "user", "manager"
+  tenant          Tenant   @relation(fields: [tenantId], references: [id])
+  tenantId        Int
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  invitations     Invitation[] @relation("InvitedBy")
+}

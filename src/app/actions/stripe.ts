@@ -14,32 +14,34 @@ export async function createCheckoutSession(
   const ui_mode = data.get(
     "uiMode",
   ) as Stripe.Checkout.SessionCreateParams.UiMode;
+  const amount = Number(data.get("amount")) || 0;
 
   const headersList = await headers()
-
   const origin: string = headersList.get("origin") as string;
+  
   const checkoutSession: Stripe.Checkout.Session =
     await stripe.checkout.sessions.create({
-      mode: "payment",
-      submit_type: "pay",
+      mode: "subscription",
+      payment_method_types: ["card"],
       line_items: [
         {
-          quantity: 1,
           price_data: {
             currency: CURRENCY,
             product_data: {
-              name: "Custom amount donation",
+              name: "Scrum Dashboard Subscription",
+              description: "Monthly subscription for Scrum Dashboard",
             },
-            unit_amount: formatAmountForStripe(
-              Number(data.get("cartPrice") as string),
-              CURRENCY,
-            ),
+            unit_amount: formatAmountForStripe(amount, CURRENCY),
+            recurring: {
+              interval: "month",
+            },
           },
+          quantity: 1,
         },
       ],
       ...(ui_mode === "hosted" && {
-        success_url: `${origin}/hosted-checkout/result?session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${origin}/hosted-checkout`,
+        success_url: `${origin}/signup?step=invite&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${origin}/signup`,
       }),
       // Do I need this?
       // ...(ui_mode === "embedded" && {
