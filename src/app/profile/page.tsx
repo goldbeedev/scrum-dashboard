@@ -1,6 +1,7 @@
 "use client"
 
 import { useUser, withPageAuthRequired } from '@auth0/nextjs-auth0/client';
+import TenantUsageCard from '../components/TenantUsageCard';
 
 export default withPageAuthRequired(function ProfilePage() {
   const { user, error, isLoading } = useUser();
@@ -28,6 +29,11 @@ export default withPageAuthRequired(function ProfilePage() {
         </div>
       </div>
 
+      {/* Team Usage Card */}
+      <div className="mb-6">
+        <TenantUsageCard />
+      </div>
+
       {/* Stats */}
       <div className="stats shadow w-full mb-6">
         <div className="stat">
@@ -45,65 +51,60 @@ export default withPageAuthRequired(function ProfilePage() {
       </div>
 
       {/* Settings Sections */}
-      <div className="grid gap-6">
-        <div className="card bg-base-100 shadow-xl">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="card bg-base-200 shadow-xl">
           <div className="card-body">
-            <h3 className="card-title text-lg">Personal Information</h3>
-            <div className="form-control w-full">
-              <label className="label">
-                <span className="label-text">Name</span>
-              </label>
-              <input type="text" defaultValue={user.name || ''} className="input input-bordered w-full" />
-              
-              <label className="label mt-4">
-                <span className="label-text">Email</span>
-              </label>
-              <input type="email" defaultValue={user.email || ''} className="input input-bordered w-full" />
-              
-              <label className="label mt-4">
-                <span className="label-text">Phone</span>
-              </label>
-              <input type="tel" placeholder="+1 (555) 123-4567" className="input input-bordered w-full" />
+            <h2 className="card-title">Account Settings</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="label">
+                  <span className="label-text">Name</span>
+                </label>
+                <input type="text" placeholder={user.name || "Enter your name"} className="input input-bordered w-full" />
+              </div>
+              <div>
+                <label className="label">
+                  <span className="label-text">Email</span>
+                </label>
+                <input type="email" placeholder={user.email || "Enter your email"} className="input input-bordered w-full" disabled />
+              </div>
+              <button className="btn btn-primary">Update Profile</button>
             </div>
           </div>
         </div>
 
-        <div className="card bg-base-100 shadow-xl">
+        <div className="card bg-base-200 shadow-xl">
           <div className="card-body">
-            <h3 className="card-title text-lg">Shipping Address</h3>
-            <div className="form-control w-full">
-              <label className="label">
-                <span className="label-text">Address</span>
-              </label>
-              <textarea className="textarea textarea-bordered h-24" placeholder="123 Main St, Apt 4B"></textarea>
-            </div>
-          </div>
-        </div>
-
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
-            <h3 className="card-title text-lg">Preferences</h3>
-            <div className="form-control">
-              <label className="label cursor-pointer">
-                <span className="label-text">Email Notifications</span>
-                <input type="checkbox" className="toggle toggle-primary" />
-              </label>
-              <label className="label cursor-pointer">
-                <span className="label-text">SMS Updates</span>
-                <input type="checkbox" className="toggle toggle-primary" />
-              </label>
-              <label className="label cursor-pointer">
-                <span className="label-text">Newsletter</span>
-                <input type="checkbox" className="toggle toggle-primary" />
-              </label>
+            <h2 className="card-title">Security</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="label">
+                  <span className="label-text">Current Password</span>
+                </label>
+                <input type="password" placeholder="Enter current password" className="input input-bordered w-full" />
+              </div>
+              <div>
+                <label className="label">
+                  <span className="label-text">New Password</span>
+                </label>
+                <input type="password" placeholder="Enter new password" className="input input-bordered w-full" />
+              </div>
+              <button className="btn btn-secondary">Change Password</button>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Save Button */}
-      <div className="mt-6 mb-6 flex justify-center">
-        <button className="btn btn-primary w-48">Save Changes</button>
+      {/* Danger Zone */}
+      <div className="card bg-base-200 shadow-xl mt-6">
+        <div className="card-body">
+          <h2 className="card-title text-error">Danger Zone</h2>
+          <p className="text-base-content/70 mb-4">These actions cannot be undone.</p>
+          <div className="space-y-2">
+            <button className="btn btn-outline btn-error">Delete Account</button>
+            <a href="/api/auth/logout" className="btn btn-outline btn-warning">Sign Out</a>
+          </div>
+        </div>
       </div>
     </div>
   );

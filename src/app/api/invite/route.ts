@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSession } from '@auth0/nextjs-auth0';
 import { PrismaClient } from '@prisma/client';
 import { generateInvitationToken, INVITATION_EXPIRY_DAYS } from '@/app/utils/invitation';
+import { canSendInvitation } from '@/app/utils/tenant-limits';
 import sgMail from '@sendgrid/mail';
 
 const prisma = new PrismaClient();
@@ -33,33 +34,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Check if user already exists in the tenant
-    const existingUser = await prisma.user.findFirst({
-      where: {
-        email,
-        tenantId: currentUser.tenantId,
-      },
-    });
-
-    if (existingUser) {
+    // Check if we can send an invitation
+    const invitationCheck = await canSendInvitation(currentUser.tenantId, email);
+    
+    if (!invitationCheck.canInvite) {
       return NextResponse.json(
-        { error: 'User is already a member of this team' },
-        { status: 400 }
-      );
-    }
-
-    // Check if there's already a pending invitation
-    const existingInvitation = await prisma.invitation.findFirst({
-      where: {
-        email,
-        tenantId: currentUser.tenantId,
-        status: 'pending',
-      },
-    });
-
-    if (existingInvitation) {
-      return NextResponse.json(
-        { error: 'An invitation has already been sent to this email' },
+        { error: invitationCheck.reason },
         { status: 400 }
       );
     }

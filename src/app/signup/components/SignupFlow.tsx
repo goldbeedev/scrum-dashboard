@@ -6,6 +6,27 @@ import { useRouter, useSearchParams } from 'next/navigation';
 
 type Step = 'auth' | 'plan' | 'payment' | 'invite';
 
+interface TenantStats {
+  usage: {
+    currentUsers: number;
+    pendingInvitations: number;
+    totalInvitations: number;
+    maxUsers: number | null;
+    canInvite: boolean;
+    remainingSlots: number | null;
+  };
+  invitations: Array<{
+    id: number;
+    email: string;
+    status: string;
+    createdAt: string;
+    invitedBy: {
+      name: string | null;
+      email: string;
+    };
+  }>;
+}
+
 export default function SignupFlow() {
   const searchParams = useSearchParams();
   const [currentStep, setCurrentStep] = useState<Step>('auth');
@@ -15,6 +36,8 @@ export default function SignupFlow() {
   const [isSendingInvite, setIsSendingInvite] = useState<boolean>(false);
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [inviteSuccess, setInviteSuccess] = useState<boolean>(false);
+  const [tenantStats, setTenantStats] = useState<TenantStats | null>(null);
+  const [isLoadingStats, setIsLoadingStats] = useState<boolean>(false);
   const { user, isLoading } = useUser();
   const router = useRouter();
 
@@ -48,6 +71,27 @@ export default function SignupFlow() {
 
     initializeUser();
   }, [user, isLoading]);
+
+  useEffect(() => {
+    const loadTenantStats = async () => {
+      if (currentStep === 'invite' && user) {
+        setIsLoadingStats(true);
+        try {
+          const response = await fetch('/api/tenant/stats');
+          if (response.ok) {
+            const stats = await response.json();
+            setTenantStats(stats);
+          }
+        } catch (error) {
+          console.error('Error loading tenant stats:', error);
+        } finally {
+          setIsLoadingStats(false);
+        }
+      }
+    };
+
+    loadTenantStats();
+  }, [currentStep, user]);
 
   const calculatePrice = (seats: number) => {
     const baseTotal = seats * BASE_PRICE;
@@ -83,6 +127,12 @@ export default function SignupFlow() {
       return;
     }
 
+    // Check if we can send an invitation
+    if (tenantStats && !tenantStats.usage.canInvite) {
+      setInviteError(`Cannot send invitation. Team has ${tenantStats.usage.currentUsers} users and ${tenantStats.usage.pendingInvitations} pending invitations. Maximum allowed: ${tenantStats.usage.maxUsers}`);
+      return;
+    }
+
     setIsSendingInvite(true);
     setInviteError(null);
     setInviteSuccess(false);
@@ -104,6 +154,13 @@ export default function SignupFlow() {
 
       setInviteSuccess(true);
       setInviteEmail('');
+      
+      // Refresh tenant stats
+      const statsResponse = await fetch('/api/tenant/stats');
+      if (statsResponse.ok) {
+        const stats = await statsResponse.json();
+        setTenantStats(stats);
+      }
     } catch (error) {
       setInviteError(error instanceof Error ? error.message : 'Failed to send invitation');
     } finally {
@@ -278,7 +335,50 @@ export default function SignupFlow() {
     return (
       <div className="mt-8 space-y-6">
         <h2 className="text-2xl font-semibold text-blue-400">Invite Your Team</h2>
-        <p className="text-gray-300">You can invite up to {selectedPlan} team members.</p>
+        
+        {/* Team Usage Stats */}
+        {isLoadingStats ? (
+          <div className="bg-gray-900 p-4 rounded-lg">
+            <div className="animate-pulse text-gray-400">Loading team stats...</div>
+          </div>
+        ) : tenantStats && (
+          <div className="bg-gray-900 p-4 rounded-lg">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+              <div>
+                <div className="text-2xl font-bold text-white">{tenantStats.usage.currentUsers}</div>
+                <div className="text-sm text-gray-400">Current Users</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-yellow-400">{tenantStats.usage.pendingInvitations}</div>
+                <div className="text-sm text-gray-400">Pending Invites</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-blue-400">{tenantStats.usage.totalInvitations}</div>
+                <div className="text-sm text-gray-400">Total Invites</div>
+              </div>
+              <div>
+                <div className="text-2xl font-bold text-green-400">
+                  {tenantStats.usage.remainingSlots !== null ? tenantStats.usage.remainingSlots : '∞'}
+                </div>
+                <div className="text-sm text-gray-400">Remaining Slots</div>
+              </div>
+            </div>
+            {tenantStats.usage.maxUsers && (
+              <div className="mt-3 text-center">
+                <div className="text-sm text-gray-400">
+                  Plan limit: {tenantStats.usage.maxUsers} users
+                </div>
+                {!tenantStats.usage.canInvite && (
+                  <div className="text-red-400 text-sm mt-1">
+                    You've reached your plan limit
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Invitation Form */}
         <div className="bg-gray-900 p-6 rounded-lg">
           <div className="space-y-4">
             <div className="flex gap-4">
@@ -288,10 +388,11 @@ export default function SignupFlow() {
                 value={inviteEmail}
                 onChange={(e) => setInviteEmail(e.target.value)}
                 className="flex-1 px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white"
+                disabled={tenantStats ? !tenantStats.usage.canInvite : false}
               />
               <button 
                 onClick={handleSendInvite}
-                disabled={isSendingInvite}
+                disabled={isSendingInvite || (tenantStats ? !tenantStats.usage.canInvite : false)}
                 className="btn btn-primary bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSendingInvite ? 'Sending...' : 'Invite'}
@@ -308,6 +409,39 @@ export default function SignupFlow() {
             </div>
           </div>
         </div>
+
+        {/* Recent Invitations */}
+        {tenantStats && tenantStats.invitations.length > 0 && (
+          <div className="bg-gray-900 p-6 rounded-lg">
+            <h3 className="text-lg font-semibold text-blue-400 mb-4">Recent Invitations</h3>
+            <div className="space-y-3">
+              {tenantStats.invitations.slice(0, 5).map((invitation) => (
+                <div key={invitation.id} className="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
+                  <div>
+                    <div className="text-white">{invitation.email}</div>
+                    <div className="text-sm text-gray-400">
+                      Invited by {invitation.invitedBy.name || invitation.invitedBy.email}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${
+                      invitation.status === 'pending' 
+                        ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-400'
+                        : invitation.status === 'accepted'
+                        ? 'bg-green-500/20 text-green-400 border border-green-400'
+                        : 'bg-red-500/20 text-red-400 border border-red-400'
+                    }`}>
+                      {invitation.status}
+                    </span>
+                    <div className="text-xs text-gray-400">
+                      {new Date(invitation.createdAt).toLocaleDateString()}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     );
   }
