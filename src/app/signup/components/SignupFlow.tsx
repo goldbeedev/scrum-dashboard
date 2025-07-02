@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useUser } from '@auth0/nextjs-auth0/client';
 import { useRouter, useSearchParams } from 'next/navigation';
+import ConfirmDialog from '../../components/ConfirmDialog';
 
 type Step = 'auth' | 'plan' | 'payment' | 'invite';
 
@@ -38,6 +39,11 @@ export default function SignupFlow() {
   const [inviteSuccess, setInviteSuccess] = useState<boolean>(false);
   const [tenantStats, setTenantStats] = useState<TenantStats | null>(null);
   const [isLoadingStats, setIsLoadingStats] = useState<boolean>(false);
+  const [revokingInvitation, setRevokingInvitation] = useState<number | null>(null);
+  const [revokeError, setRevokeError] = useState<string | null>(null);
+  const [revokeSuccess, setRevokeSuccess] = useState<string | null>(null);
+  const [showRevokeDialog, setShowRevokeDialog] = useState<boolean>(false);
+  const [invitationToRevoke, setInvitationToRevoke] = useState<{ id: number; email: string } | null>(null);
   const { user, isLoading } = useUser();
   const router = useRouter();
 
@@ -165,6 +171,63 @@ export default function SignupFlow() {
       setInviteError(error instanceof Error ? error.message : 'Failed to send invitation');
     } finally {
       setIsSendingInvite(false);
+    }
+  };
+
+  const handleRevokeInvitation = async (invitationId: number) => {
+    setRevokingInvitation(invitationId);
+    setRevokeError(null);
+    setRevokeSuccess(null);
+
+    try {
+      const response = await fetch('/api/invite/revoke', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ invitationId }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to revoke invitation');
+      }
+
+      // Show success message
+      setRevokeSuccess('Invitation revoked successfully. Slot has been freed up.');
+
+      // Refresh tenant stats
+      const statsResponse = await fetch('/api/tenant/stats');
+      if (statsResponse.ok) {
+        const stats = await statsResponse.json();
+        setTenantStats(stats);
+      }
+
+      // Clear success message after 3 seconds
+      setTimeout(() => {
+        setRevokeSuccess(null);
+      }, 3000);
+    } catch (error) {
+      setRevokeError(error instanceof Error ? error.message : 'Failed to revoke invitation');
+    } finally {
+      setRevokingInvitation(null);
+    }
+  };
+
+  const openRevokeDialog = (invitation: { id: number; email: string }) => {
+    setInvitationToRevoke(invitation);
+    setShowRevokeDialog(true);
+  };
+
+  const closeRevokeDialog = () => {
+    setShowRevokeDialog(false);
+    setInvitationToRevoke(null);
+  };
+
+  const confirmRevoke = async () => {
+    if (invitationToRevoke) {
+      await handleRevokeInvitation(invitationToRevoke.id);
     }
   };
 
@@ -333,116 +396,152 @@ export default function SignupFlow() {
 
   if (currentStep === 'invite') {
     return (
-      <div className="mt-8 space-y-6">
-        <h2 className="text-2xl font-semibold text-blue-400">Invite Your Team</h2>
-        
-        {/* Team Usage Stats */}
-        {isLoadingStats ? (
-          <div className="bg-gray-900 p-4 rounded-lg">
-            <div className="animate-pulse text-gray-400">Loading team stats...</div>
-          </div>
-        ) : tenantStats && (
-          <div className="bg-gray-900 p-4 rounded-lg">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-              <div>
-                <div className="text-2xl font-bold text-white">{tenantStats.usage.currentUsers}</div>
-                <div className="text-sm text-gray-400">Current Users</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-yellow-400">{tenantStats.usage.pendingInvitations}</div>
-                <div className="text-sm text-gray-400">Pending Invites</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-blue-400">{tenantStats.usage.totalInvitations}</div>
-                <div className="text-sm text-gray-400">Total Invites</div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-green-400">
-                  {tenantStats.usage.remainingSlots !== null ? tenantStats.usage.remainingSlots : '∞'}
-                </div>
-                <div className="text-sm text-gray-400">Remaining Slots</div>
-              </div>
+      <>
+        <div className="mt-8 space-y-6">
+          <h2 className="text-2xl font-semibold text-blue-400">Invite Your Team</h2>
+          
+          {/* Team Usage Stats */}
+          {isLoadingStats ? (
+            <div className="bg-gray-900 p-4 rounded-lg">
+              <div className="animate-pulse text-gray-400">Loading team stats...</div>
             </div>
-            {tenantStats.usage.maxUsers && (
-              <div className="mt-3 text-center">
-                <div className="text-sm text-gray-400">
-                  Plan limit: {tenantStats.usage.maxUsers} users
+          ) : tenantStats && (
+            <div className="bg-gray-900 p-4 rounded-lg">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div>
+                  <div className="text-2xl font-bold text-white">{tenantStats.usage.currentUsers}</div>
+                  <div className="text-sm text-gray-400">Current Users</div>
                 </div>
-                {!tenantStats.usage.canInvite && (
-                  <div className="text-red-400 text-sm mt-1">
-                    You've reached your plan limit
+                <div>
+                  <div className="text-2xl font-bold text-yellow-400">{tenantStats.usage.pendingInvitations}</div>
+                  <div className="text-sm text-gray-400">Pending Invites</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-blue-400">{tenantStats.usage.totalInvitations}</div>
+                  <div className="text-sm text-gray-400">Total Invites</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-green-400">
+                    {tenantStats.usage.remainingSlots !== null ? tenantStats.usage.remainingSlots : '∞'}
                   </div>
-                )}
+                  <div className="text-sm text-gray-400">Remaining Slots</div>
+                </div>
               </div>
-            )}
-          </div>
-        )}
+              {tenantStats.usage.maxUsers && (
+                <div className="mt-3 text-center">
+                  <div className="text-sm text-gray-400">
+                    Plan limit: {tenantStats.usage.maxUsers} users
+                  </div>
+                  {!tenantStats.usage.canInvite && (
+                    <div className="text-red-400 text-sm mt-1">
+                      You've reached your plan limit
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
-        {/* Invitation Form */}
-        <div className="bg-gray-900 p-6 rounded-lg">
-          <div className="space-y-4">
-            <div className="flex gap-4">
-              <input
-                type="email"
-                placeholder="Enter team member's email"
-                value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
-                className="flex-1 px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white"
-                disabled={tenantStats ? !tenantStats.usage.canInvite : false}
-              />
-              <button 
-                onClick={handleSendInvite}
-                disabled={isSendingInvite || (tenantStats ? !tenantStats.usage.canInvite : false)}
-                className="btn btn-primary bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSendingInvite ? 'Sending...' : 'Invite'}
-              </button>
-            </div>
-            {inviteError && (
-              <div className="text-red-400 text-sm">{inviteError}</div>
-            )}
-            {inviteSuccess && (
-              <div className="text-green-400 text-sm">Invitation sent successfully!</div>
-            )}
-            <div className="text-sm text-gray-400">
-              Team members will receive an email with instructions to create their account.
+          {/* Invitation Form */}
+          <div className="bg-gray-900 p-6 rounded-lg">
+            <div className="space-y-4">
+              <div className="flex gap-4">
+                <input
+                  type="email"
+                  placeholder="Enter team member's email"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  className="flex-1 px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white"
+                  disabled={tenantStats ? !tenantStats.usage.canInvite : false}
+                />
+                <button 
+                  onClick={handleSendInvite}
+                  disabled={isSendingInvite || (tenantStats ? !tenantStats.usage.canInvite : false)}
+                  className="btn btn-primary bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSendingInvite ? 'Sending...' : 'Invite'}
+                </button>
+              </div>
+              {inviteError && (
+                <div className="text-red-400 text-sm">{inviteError}</div>
+              )}
+              {inviteSuccess && (
+                <div className="text-green-400 text-sm">Invitation sent successfully!</div>
+              )}
+              <div className="text-sm text-gray-400">
+                Team members will receive an email with instructions to create their account.
+              </div>
             </div>
           </div>
+
+          {/* Recent Invitations */}
+          {tenantStats && tenantStats.invitations.length > 0 && (
+            <div className="bg-gray-900 p-6 rounded-lg">
+              <h3 className="text-lg font-semibold text-blue-400 mb-4">Recent Invitations</h3>
+              {revokeError && (
+                <div className="text-red-400 text-sm mb-4">{revokeError}</div>
+              )}
+              {revokeSuccess && (
+                <div className="text-green-400 text-sm mb-4">{revokeSuccess}</div>
+              )}
+              <div className="space-y-3">
+                {tenantStats.invitations.slice(0, 5).map((invitation) => (
+                  <div key={invitation.id} className="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
+                    <div>
+                      <div className="text-white">{invitation.email}</div>
+                      <div className="text-sm text-gray-400">
+                        Invited by {invitation.invitedBy.name || invitation.invitedBy.email}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2 py-1 rounded text-xs font-medium ${
+                        invitation.status === 'pending' 
+                          ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-400'
+                          : invitation.status === 'accepted'
+                          ? 'bg-green-500/20 text-green-400 border border-green-400'
+                          : invitation.status === 'revoked'
+                          ? 'bg-red-500/20 text-red-400 border border-red-400'
+                          : 'bg-gray-500/20 text-gray-400 border border-gray-400'
+                      }`}>
+                        {invitation.status}
+                      </span>
+                      <div className="text-xs text-gray-400">
+                        {new Date(invitation.createdAt).toLocaleDateString()}
+                      </div>
+                      {invitation.status === 'pending' && (
+                        <button
+                          onClick={() => openRevokeDialog({ id: invitation.id, email: invitation.email })}
+                          disabled={revokingInvitation === invitation.id}
+                          className="btn btn-xs btn-error text-white"
+                          title="Revoke invitation"
+                        >
+                          {revokingInvitation === invitation.id ? (
+                            <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin"></div>
+                          ) : (
+                            'Revoke'
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Recent Invitations */}
-        {tenantStats && tenantStats.invitations.length > 0 && (
-          <div className="bg-gray-900 p-6 rounded-lg">
-            <h3 className="text-lg font-semibold text-blue-400 mb-4">Recent Invitations</h3>
-            <div className="space-y-3">
-              {tenantStats.invitations.slice(0, 5).map((invitation) => (
-                <div key={invitation.id} className="flex justify-between items-center p-3 bg-gray-800 rounded-lg">
-                  <div>
-                    <div className="text-white">{invitation.email}</div>
-                    <div className="text-sm text-gray-400">
-                      Invited by {invitation.invitedBy.name || invitation.invitedBy.email}
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${
-                      invitation.status === 'pending' 
-                        ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-400'
-                        : invitation.status === 'accepted'
-                        ? 'bg-green-500/20 text-green-400 border border-green-400'
-                        : 'bg-red-500/20 text-red-400 border border-red-400'
-                    }`}>
-                      {invitation.status}
-                    </span>
-                    <div className="text-xs text-gray-400">
-                      {new Date(invitation.createdAt).toLocaleDateString()}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
+        {/* Confirmation Dialog */}
+        <ConfirmDialog
+          isOpen={showRevokeDialog}
+          onClose={closeRevokeDialog}
+          onConfirm={confirmRevoke}
+          title="Revoke Invitation"
+          message={`Are you sure you want to revoke the invitation sent to ${invitationToRevoke?.email}? This action cannot be undone.`}
+          confirmText="Revoke"
+          cancelText="Cancel"
+          confirmButtonClass="btn-error"
+        />
+      </>
     );
   }
 

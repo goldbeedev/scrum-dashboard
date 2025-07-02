@@ -48,7 +48,7 @@ model Invitation {
   id          Int      @id @default(autoincrement())
   email       String
   token       String   @unique
-  status      String   @default("pending") // pending, accepted, expired
+  status      String   @default("pending") // pending, accepted, revoked, expired
   expiresAt   DateTime
   tenant      Tenant   @relation(fields: [tenantId], references: [id])
   tenantId    Int

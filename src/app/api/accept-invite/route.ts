@@ -34,9 +34,23 @@ export async function POST(request: Request) {
       );
     }
 
-    if (invitation.status !== 'pending') {
+    if (invitation.status === 'revoked') {
+      return NextResponse.json(
+        { error: 'This invitation has been revoked' },
+        { status: 400 }
+      );
+    }
+
+    if (invitation.status === 'accepted') {
       return NextResponse.json(
         { error: 'Invitation has already been used' },
+        { status: 400 }
+      );
+    }
+
+    if (invitation.status !== 'pending') {
+      return NextResponse.json(
+        { error: 'Invitation is no longer valid' },
         { status: 400 }
       );
     }

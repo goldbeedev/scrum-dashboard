@@ -17,7 +17,7 @@ export async function getTenantUsage(tenantId: number): Promise<TenantUsage> {
     where: { tenantId }
   });
 
-  // Get pending invitations
+  // Get pending invitations (only count non-expired, non-revoked invitations)
   const pendingInvitations = await prisma.invitation.count({
     where: { 
       tenantId,
@@ -40,6 +40,7 @@ export async function getTenantUsage(tenantId: number): Promise<TenantUsage> {
   const maxUsers = tenant?.maxUsers || null;
   const remainingSlots = maxUsers ? maxUsers - currentUsers - pendingInvitations : null;
   const canInvite = maxUsers === null || (currentUsers + pendingInvitations) < maxUsers;
+
 
   return {
     currentUsers,
@@ -67,7 +68,7 @@ export async function canSendInvitation(tenantId: number, email: string): Promis
     };
   }
 
-  // Check if there's already a pending invitation
+  // Check if there's already a pending invitation (not revoked)
   const existingInvitation = await prisma.invitation.findFirst({
     where: {
       email,

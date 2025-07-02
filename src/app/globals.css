@@ -25,7 +25,7 @@ body {
 }
 
 /* Custom utility classes for consistent styling */
-@layer components {
+/* @layer components {
   .card-dark {
     @apply bg-base-200 border border-base-300 shadow-xl;
   }
@@ -45,4 +45,4 @@ body {
   .hero-gradient {
     @apply bg-gradient-to-br from-base-100 via-base-200 to-base-300;
   }
-}
+} */
